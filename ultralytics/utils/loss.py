@@ -396,7 +396,9 @@ class v8DetectionLoss:
             box_loss_type=self.box_loss_type,
             shape_iou_scale=self.shape_iou_scale,
         )
-        self.bbox_loss = BboxLoss(m.reg_max, box_loss_type=self.box_loss_type, shape_iou_scale=self.shape_iou_scale).to(device)
+        self.bbox_loss = BboxLoss(m.reg_max, box_loss_type=self.box_loss_type, shape_iou_scale=self.shape_iou_scale).to(
+            device
+        )
         self.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
 
     def preprocess(self, targets: torch.Tensor, batch_size: int, scale_tensor: torch.Tensor) -> torch.Tensor:
