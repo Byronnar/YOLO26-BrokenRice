@@ -87,14 +87,14 @@ def shape_iou(
 ) -> torch.Tensor:
     """Calculate Shape-IoU between bounding boxes.
 
-    Shape-IoU considers the shape and scale of bounding boxes themselves, addressing the limitation of
-    traditional IoU metrics that treat all boxes equally regardless of their shape (aspect ratio) and scale.
+    Shape-IoU considers the shape and scale of bounding boxes themselves, addressing the limitation of traditional IoU
+    metrics that treat all boxes equally regardless of their shape (aspect ratio) and scale.
 
     Key innovations:
     - Shape-aware weighting: Short-edge directions receive higher penalty weights, matching the observation
-      that deviations along the short edge impact IoU more significantly.
+    that deviations along the short edge impact IoU more significantly.
     - Scale-aware factor: The `scale` parameter adjusts shape weight sensitivity based on target scale.
-      When scale=0, weights are uniform (ww=hh=1); larger scale values amplify the effect of aspect ratio.
+    When scale=0, weights are uniform (ww=hh=1); larger scale values amplify the effect of aspect ratio.
 
     Args:
         box1 (torch.Tensor): Predicted bounding boxes, last dim is 4.
