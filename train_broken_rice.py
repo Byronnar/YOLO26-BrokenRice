@@ -1,5 +1,5 @@
 """
-训练脚本 - YOLO26 碎米检测
+训练脚本 - YOLO26 碎米检测.
 ===========================
 基于 Ultralytics YOLO26，适配 broken-rice-detection 数据集。
 
@@ -44,25 +44,26 @@ MODEL_SCALES_P2 = {
 
 def parse_args():
     parser = argparse.ArgumentParser(description="YOLO26 碎米检测训练")
-    parser.add_argument("--model", type=str, default="s", choices=MODEL_SCALES.keys(),
-                        help="模型规模 (n/s/m/l/x)")
-    parser.add_argument("--imgsz", type=int, default=960,
-                        help="输入图像尺寸 (推荐 960 或 640)")
-    parser.add_argument("--epochs", type=int, default=150,
-                        help="训练轮数")
-    parser.add_argument("--batch", type=int, default=4,
-                        help="批大小 (960 尺寸下建议 4)")
-    parser.add_argument("--p2", action="store_true",
-                        help="使用 P2 检测头（增加小目标检测层）")
-    parser.add_argument("--resume", type=str, default=None,
-                        help="从指定 checkpoint 恢复训练")
-    parser.add_argument("--device", type=str, default="0",
-                        help="训练设备 (0/1/cpu)")
-    parser.add_argument("--box_loss_type", type=str, default="ciou",
-                        choices=["ciou", "shape_iou", "diou", "giou"],
-                        help="IoU 损失类型: ciou(默认), shape_iou, diou, giou")
-    parser.add_argument("--shape_iou_scale", type=float, default=0.0,
-                        help="Shape-IoU 的 scale 因子 (仅 box_loss_type=shape_iou 时生效, 推荐 0~3)")
+    parser.add_argument("--model", type=str, default="s", choices=MODEL_SCALES.keys(), help="模型规模 (n/s/m/l/x)")
+    parser.add_argument("--imgsz", type=int, default=960, help="输入图像尺寸 (推荐 960 或 640)")
+    parser.add_argument("--epochs", type=int, default=150, help="训练轮数")
+    parser.add_argument("--batch", type=int, default=4, help="批大小 (960 尺寸下建议 4)")
+    parser.add_argument("--p2", action="store_true", help="使用 P2 检测头（增加小目标检测层）")
+    parser.add_argument("--resume", type=str, default=None, help="从指定 checkpoint 恢复训练")
+    parser.add_argument("--device", type=str, default="0", help="训练设备 (0/1/cpu)")
+    parser.add_argument(
+        "--box_loss_type",
+        type=str,
+        default="ciou",
+        choices=["ciou", "shape_iou", "diou", "giou"],
+        help="IoU 损失类型: ciou(默认), shape_iou, diou, giou",
+    )
+    parser.add_argument(
+        "--shape_iou_scale",
+        type=float,
+        default=0.0,
+        help="Shape-IoU 的 scale 因子 (仅 box_loss_type=shape_iou 时生效, 推荐 0~3)",
+    )
     return parser.parse_args()
 
 
@@ -100,19 +101,15 @@ def main():
         project=str(PROJECT_DIR),
         name=f"yolo26{args.model}{'_p2' if args.p2 else ''}_img{args.imgsz}_{args.box_loss_type}",
         exist_ok=True,
-
         # ── 碎米检测调优参数 ──────────────────────
         # 类别加权：others 类极度稀少 (0.2%)，启用逆频率加权
         cls_pw=1.0,
-
         # IoU 损失类型
         box_loss_type=args.box_loss_type,
         shape_iou_scale=args.shape_iou_scale,
-
         # 密集目标：增大最大检测数、降低 NMS IoU
         max_det=300,
         iou=0.5,
-
         # 优化器
         optimizer="AdamW",
         lr0=0.002,
@@ -120,7 +117,6 @@ def main():
         weight_decay=0.0005,
         warmup_epochs=5,
         cos_lr=True,
-
         # 数据增强（保持较强增强以应对小数据集）
         mosaic=1.0,
         mixup=0.1,
@@ -133,7 +129,6 @@ def main():
         scale=0.5,
         fliplr=0.5,
         flipud=0.0,
-
         # 其他
         patience=30,
         seed=42,
@@ -147,21 +142,24 @@ def main():
         cache="ram",
     )
 
-    print(f"\n{'='*60}")
-    print(f"YOLO26 碎米检测训练")
-    print(f"{'='*60}")
+    print(f"\n{'=' * 60}")
+    print("YOLO26 碎米检测训练")
+    print(f"{'=' * 60}")
     print(f"  模型:     {model_name}")
     print(f"  图像尺寸: {args.imgsz}")
     print(f"  批大小:   {args.batch}")
     print(f"  轮数:     {args.epochs}")
     print(f"  设备:     {args.device}")
     print(f"  P2 检测头: {'是' if args.p2 else '否'}")
-    print(f"  IoU Loss: {args.box_loss_type}" + (f" (scale={args.shape_iou_scale})" if args.box_loss_type == "shape_iou" else ""))
+    print(
+        f"  IoU Loss: {args.box_loss_type}"
+        + (f" (scale={args.shape_iou_scale})" if args.box_loss_type == "shape_iou" else "")
+    )
     print(f"  输出目录: {PROJECT_DIR}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     # 开始训练
-    results = model.train(**train_kwargs)
+    model.train(**train_kwargs)
 
     # 训练完成后验证
     print("\n训练完成，运行最终验证...")
