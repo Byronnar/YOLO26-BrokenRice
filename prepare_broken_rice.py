@@ -1,5 +1,5 @@
 """
-数据集重组脚本 - 将 broken-rice-detection 转为 YOLO 标准格式
+数据集重组脚本 - 将 broken-rice-detection 转为 YOLO 标准格式.
 ==============================================================
 将原始目录结构：
     broken-rice-detection-main/
@@ -46,9 +46,9 @@ def parse_args():
 
 
 def read_val_list(val_file: Path) -> set:
-    """读取验证集文件列表，返回文件名（不含扩展名）集合。"""
+    """读取验证集文件列表，返回文件名（不含扩展名）集合。."""
     names = set()
-    with open(val_file, "r", encoding="utf-8") as f:
+    with open(val_file, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or not line[0].isdigit():
@@ -60,7 +60,7 @@ def read_val_list(val_file: Path) -> set:
 
 
 def link_or_copy(src: Path, dst: Path, use_copy: bool):
-    """创建符号链接或复制文件。"""
+    """创建符号链接或复制文件。."""
     if use_copy:
         shutil.copy2(src, dst)
     else:
@@ -135,7 +135,7 @@ def main():
         else:
             train_count += 1
 
-    print(f"\n完成！")
+    print("\n完成！")
     print(f"  训练集：{train_count} 张")
     print(f"  验证集：{val_count} 张")
     print(f"  跳过（缺少标签）：{skip_count} 张")
