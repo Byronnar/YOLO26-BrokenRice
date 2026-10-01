@@ -87,14 +87,14 @@ def shape_iou(
 ) -> torch.Tensor:
     """Calculate Shape-IoU between bounding boxes.
 
-    Shape-IoU considers the shape and scale of bounding boxes themselves, addressing the limitation of
-    traditional IoU metrics that treat all boxes equally regardless of their shape (aspect ratio) and scale.
+    Shape-IoU considers the shape and scale of bounding boxes themselves, addressing the limitation of traditional IoU
+    metrics that treat all boxes equally regardless of their shape (aspect ratio) and scale.
 
     Key innovations:
     - Shape-aware weighting: Short-edge directions receive higher penalty weights, matching the observation
-      that deviations along the short edge impact IoU more significantly.
+    that deviations along the short edge impact IoU more significantly.
     - Scale-aware factor: The `scale` parameter adjusts shape weight sensitivity based on target scale.
-      When scale=0, weights are uniform (ww=hh=1); larger scale values amplify the effect of aspect ratio.
+    When scale=0, weights are uniform (ww=hh=1); larger scale values amplify the effect of aspect ratio.
 
     Args:
         box1 (torch.Tensor): Predicted bounding boxes, last dim is 4.
@@ -395,7 +395,7 @@ class ConfusionMatrix(DataExportMixin):
         matches (dict | None): Contains the indices of ground truths and predictions categorized into TP, FP and FN.
     """
 
-    def __init__(self, names: dict[int, str] = {}, task: str = "detect", save_matches: bool = False):
+    def __init__(self, names: dict[int, str] | None = None, task: str = "detect", save_matches: bool = False):
         """Initialize a ConfusionMatrix instance.
 
         Args:
@@ -403,6 +403,8 @@ class ConfusionMatrix(DataExportMixin):
             task (str, optional): Type of task, either 'detect' or 'classify'.
             save_matches (bool, optional): Save the indices of GTs, TPs, FPs, FNs for visualization.
         """
+        if names is None:
+            names = {}
         self.task = task
         self.nc = len(names)  # number of classes
         self.matrix = np.zeros((self.nc, self.nc)) if self.task == "classify" else np.zeros((self.nc + 1, self.nc + 1))
@@ -465,7 +467,7 @@ class ConfusionMatrix(DataExportMixin):
         """
         gt_cls, gt_bboxes = batch["cls"], batch["bboxes"]
         if self.matches is not None:  # only if visualization is enabled
-            self.matches = {k: defaultdict(list) for k in {"TP", "FP", "FN", "GT"}}
+            self.matches = {k: defaultdict(list) for k in ("TP", "FP", "FN", "GT")}
             for i in range(gt_cls.shape[0]):
                 self._append_matches("GT", batch, i)  # store GT
         is_obb = gt_bboxes.shape[1] == 5  # check if boxes contains angle for OBB
@@ -641,7 +643,7 @@ class ConfusionMatrix(DataExportMixin):
         if ticklabels != "auto":
             ax.set_xticklabels(ticklabels, fontsize=tick_fontsize, rotation=90, ha="center")
             ax.set_yticklabels(ticklabels, fontsize=tick_fontsize)
-        for s in {"left", "right", "bottom", "top", "outline"}:
+        for s in ("left", "right", "bottom", "top", "outline"):
             if s != "outline":
                 ax.spines[s].set_visible(False)  # Confusion matrix plot don't have outline
             cbar.ax.spines[s].set_visible(False)
@@ -709,7 +711,7 @@ def plot_pr_curve(
     py: np.ndarray,
     ap: np.ndarray,
     save_dir: Path = Path("pr_curve.png"),
-    names: dict[int, str] = {},
+    names: dict[int, str] | None = None,
     on_plot=None,
 ):
     """Plot precision-recall curve.
@@ -724,6 +726,8 @@ def plot_pr_curve(
     """
     import matplotlib.pyplot as plt  # scope for faster 'import ultralytics'
 
+    if names is None:
+        names = {}
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     py = np.stack(py, axis=1)
 
@@ -753,7 +757,7 @@ def plot_mc_curve(
     px: np.ndarray,
     py: np.ndarray,
     save_dir: Path = Path("mc_curve.png"),
-    names: dict[int, str] = {},
+    names: dict[int, str] | None = None,
     xlabel: str = "Confidence",
     ylabel: str = "Metric",
     on_plot=None,
@@ -771,6 +775,8 @@ def plot_mc_curve(
     """
     import matplotlib.pyplot as plt  # scope for faster 'import ultralytics'
 
+    if names is None:
+        names = {}
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
 
     if 0 < len(names) < 21:  # display per-class legend if < 21 classes
@@ -834,7 +840,7 @@ def ap_per_class(
     plot: bool = False,
     on_plot=None,
     save_dir: Path = Path(),
-    names: dict[int, str] = {},
+    names: dict[int, str] | None = None,
     eps: float = 1e-16,
     prefix: str = "",
 ) -> tuple:
@@ -867,6 +873,8 @@ def ap_per_class(
         prec_values (np.ndarray): Precision values at mAP@0.5 for each class.
     """
     # Sort by objectness
+    if names is None:
+        names = {}
     i = np.argsort(-conf)
     tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
 
@@ -1155,16 +1163,18 @@ class DetMetrics(SimpleClass, DataExportMixin):
         summary: Generate a summarized representation of per-class detection metrics as a list of dictionaries.
     """
 
-    def __init__(self, names: dict[int, str] = {}) -> None:
+    def __init__(self, names: dict[int, str] | None = None) -> None:
         """Initialize a DetMetrics instance with class names.
 
         Args:
             names (dict[int, str], optional): Dictionary of class names.
         """
+        if names is None:
+            names = {}
         self.names = names
         self.box = Metric()
         self.speed = {"preprocess": 0.0, "inference": 0.0, "loss": 0.0, "postprocess": 0.0}
-        self.stats = dict(tp=[], conf=[], pred_cls=[], target_cls=[], target_img=[])
+        self.stats = {"tp": [], "conf": [], "pred_cls": [], "target_cls": [], "target_img": []}
         self.nt_per_class = None
         self.nt_per_image = None
 
@@ -1175,7 +1185,7 @@ class DetMetrics(SimpleClass, DataExportMixin):
             stat (dict[str, Any]): Dictionary containing new statistical values to append. Keys should match existing
                 keys in self.stats.
         """
-        for k in self.stats.keys():
+        for k in self.stats:
             self.stats[k].append(stat[k])
         self.box.update_image_metrics(stat["tp"], stat["target_cls"], stat["pred_cls"], stat["im_name"])
 
@@ -1324,12 +1334,14 @@ class SegmentMetrics(DetMetrics):
         summary: Generate a summarized representation of per-class segmentation metrics as a list of dictionaries.
     """
 
-    def __init__(self, names: dict[int, str] = {}) -> None:
+    def __init__(self, names: dict[int, str] | None = None) -> None:
         """Initialize a SegmentMetrics instance with class names.
 
         Args:
             names (dict[int, str], optional): Dictionary of class names.
         """
+        if names is None:
+            names = {}
         DetMetrics.__init__(self, names)
         self.seg = Metric()
         self.stats["tp_m"] = []  # add additional stats for masks
@@ -1475,12 +1487,14 @@ class PoseMetrics(DetMetrics):
         summary: Generate a summarized representation of per-class pose metrics as a list of dictionaries.
     """
 
-    def __init__(self, names: dict[int, str] = {}) -> None:
+    def __init__(self, names: dict[int, str] | None = None) -> None:
         """Initialize the PoseMetrics class with class names.
 
         Args:
             names (dict[int, str], optional): Dictionary of class names.
         """
+        if names is None:
+            names = {}
         super().__init__(names)
         self.pose = Metric()
         self.stats["tp_p"] = []  # add additional stats for pose
@@ -1699,10 +1713,12 @@ class OBBMetrics(DetMetrics):
         https://arxiv.org/pdf/2106.06072.pdf
     """
 
-    def __init__(self, names: dict[int, str] = {}) -> None:
+    def __init__(self, names: dict[int, str] | None = None) -> None:
         """Initialize an OBBMetrics instance with class names.
 
         Args:
             names (dict[int, str], optional): Dictionary of class names.
         """
+        if names is None:
+            names = {}
         DetMetrics.__init__(self, names)

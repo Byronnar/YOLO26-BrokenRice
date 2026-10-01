@@ -1,5 +1,5 @@
 """
-推理与可视化脚本 - YOLO26 碎米检测
+推理与可视化脚本 - YOLO26 碎米检测.
 ====================================
 在图像上绘制检测框并保存结果。
 
@@ -24,14 +24,14 @@ OUTPUT_DIR = SCRIPT_DIR.parent / "outputs" / "broken_rice_vis"
 
 # 类别颜色 (BGR)
 COLORS = {
-    "rice":   (0, 255, 0),     # 绿色
-    "broken": (0, 165, 255),   # 橙色
-    "others": (0, 0, 255),     # 红色
+    "rice": (0, 255, 0),  # 绿色
+    "broken": (0, 165, 255),  # 橙色
+    "others": (0, 0, 255),  # 红色
 }
 
 
 def find_model() -> Path:
-    """自动查找最新训练的 best.pt。"""
+    """自动查找最新训练的 best.pt。."""
     if DEFAULT_MODEL.exists():
         return DEFAULT_MODEL
     # 在 outputs/broken_rice_yolo26 下搜索
@@ -40,7 +40,7 @@ def find_model() -> Path:
         models = sorted(search_dir.rglob("best.pt"), key=lambda p: p.stat().st_mtime, reverse=True)
         if models:
             return models[0]
-    raise FileNotFoundError(f"找不到训练好的模型，请用 --model 指定路径")
+    raise FileNotFoundError("找不到训练好的模型，请用 --model 指定路径")
 
 
 def parse_args():
@@ -86,7 +86,6 @@ def main():
     )
 
     # 可视化
-    names = model.names  # {0: 'rice', 1: 'broken', 2: 'others'}
     count = 0
     limit = args.num if args.num > 0 else len(results)
 
@@ -106,6 +105,7 @@ def main():
         img_path = Path(r.path)
         save_path = save_dir / f"vis_{img_path.stem}.jpg"
         import cv2
+
         cv2.imwrite(str(save_path), annotated)
 
         # 打印统计
