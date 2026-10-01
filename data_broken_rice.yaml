@@ -4,11 +4,11 @@
 # 需先运行 prepare_broken_rice.py 重组数据集
 
 path: E:/others/code_demo/rice_detection/datasets/broken-rice-yolo
-train: images/train   # 2172 张
-val: images/val       # 263 张
+train: images/train # 2172 张
+val: images/val # 263 张
 
 # 类别
 names:
-  0: rice       # 整粒米
-  1: broken     # 碎米
-  2: others     # 其他（杂质/异色粒）
+  0: rice # 整粒米
+  1: broken # 碎米
+  2: others # 其他（杂质/异色粒）
